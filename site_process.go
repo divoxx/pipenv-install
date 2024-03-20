@@ -22,12 +22,12 @@ func NewSiteProcess(executable Executable) SiteProcess {
 }
 
 // Execute runs a python command to locate the site packages within the pip targetLayerPath.
-func (p SiteProcess) Execute(layerPath string) (string, error) {
+func (p SiteProcess) Execute(venvPath string) (string, error) {
 	buffer := bytes.NewBuffer(nil)
 
 	err := p.executable.Execute(pexec.Execution{
 		Args:   []string{"-m", "site", "--user-site"},
-		Env:    append(os.Environ(), fmt.Sprintf("PYTHONUSERBASE=%s", layerPath)),
+		Env:    append(os.Environ(), fmt.Sprintf("PYTHONUSERBASE=%s", venvPath)),
 		Stdout: buffer,
 		Stderr: buffer,
 	})

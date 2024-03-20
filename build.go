@@ -20,7 +20,7 @@ import (
 
 // SitePackagesProcess defines the interface for determining the site-packages path.
 type SitePackagesProcess interface {
-	Execute(layerPath string) (sitePackagesPath string, err error)
+	Execute(venvDir string) (sitePackagesPath string, err error)
 }
 
 // InstallProcess defines the interface for installing the pipenv dependencies.
@@ -86,7 +86,7 @@ func Build(
 			return packit.BuildResult{}, err
 		}
 
-		sitePackagesPath, err := siteProcess.Execute(packagesLayer.Path)
+		sitePackagesPath, err := siteProcess.Execute(venvDir)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
@@ -110,6 +110,10 @@ func Build(
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
+
+		// This allows pipenv run to work correctly inside the container.
+		packagesLayer.SharedEnv.Override("PIP_USER", "1")
+		packagesLayer.SharedEnv.Override("WORKON_HOME", packagesLayer.Path)
 
 		packagesLayer.SharedEnv.Prepend("PATH", filepath.Join(venvDir, "bin"), ":")
 		packagesLayer.SharedEnv.Prepend("PYTHONPATH", sitePackagesPath, string(os.PathListSeparator))
